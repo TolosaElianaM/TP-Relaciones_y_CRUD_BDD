@@ -113,23 +113,75 @@ const moviesController = {
 
             const allGenres = await db.Genre.findAll()
 
-            res.render('moviesEdit', {
-                Movie,
-                allGenres
-            })
+            if (Movie !== null) {
+                res.render('moviesEdit', {
+                    Movie,
+                    allGenres
+                })
+            } else {
+                res.send('La pelicula no existe')
+            }
 
         } catch (error) {
             res.send(error)
         }
     },
     update: function (req, res) {
+        const {
+            title,
+            rating,
+            awards,
+            release_date,
+            length,
+            genre_id
+        } = req.body
 
+        db.Movie.update({
+                title,
+                rating,
+                awards,
+                release_date,
+                length,
+                genre_id
+            }, {
+                where: {
+                    id: req.params.id
+                }
+            })
+            .then(result => {
+                if (result[0] != 0) {
+                    res.redirect(`/movies/detail/${req.params.id}`)
+                } else {
+                    res.send('No se pudo modificar la pelicula')
+                }
+            })
+            .catch(err => {
+                console.log(err)
+            })
     },
     delete: function (req, res) {
-
+        db.Movie.findByPk(req.params.id)
+            .then(Movie => {
+                res.render('moviesDelete', {
+                    Movie
+                })
+            })
+            .catch(err => {
+                console.log(err)
+            })
     },
     destroy: function (req, res) {
-
+        db.Movie.destroy({
+                where: {
+                    id: req.params.id
+                }
+            })
+            .then(result => {
+                res.redirect('/movies')
+            })
+            .catch(err => {
+                console.log(err)
+            })
     }
 }
 
